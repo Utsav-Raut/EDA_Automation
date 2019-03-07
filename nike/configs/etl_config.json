@@ -1,5 +1,6 @@
 {
-    "db_name": "mock1",
+    "db_name": "userdb",
     "table_name":"person",
-    "column_name": "Salary"
+    "column_with_agg_func": [["salary", "max"], ["expenses", "stddev"]],
+    "field_name":"salary"
 }
