@@ -1,6 +1,8 @@
 from dependencies.spark import start_spark
 from utils.aggregate_ops import get_agg_result
+from utils.row_count_validation import row_count_val
 from pyspark.sql.types import DoubleType, IntegerType
+from utils.file_ops import get_files_details
 def main():
     """Main ETL script definition.
     :return: None
@@ -15,7 +17,8 @@ def main():
 
     # Execute ETL pipeline
     data = extract_data(spark, config['db_name'], config['table_name'])
-    data_transformed = transformed_data(data, spark, config['column_name'])
+    data_transformed = transformed_data(data, spark, config['column_with_agg_func'], 
+                        config['table_name'], config['field_name'])
     load_data(data_transformed)
 
     # log the success and terminate the spark session
@@ -33,21 +36,24 @@ def extract_data(spark, db_name, table_name):
     # df.show()
     return df
 
-def transformed_data(df, spark, column_name):
+def transformed_data(df, spark, column_with_agg_func, table_name, field_name):
     "Transform the original data set"
-
+    # df.coalesce(1).write.csv("D:/Users/URaut/Pictures/output1.csv")
     # df_transformed = df.select("Firstname")
-    # df_transformed = df.filter(df.Lastname == "Arrow")
-    # df_transformed = df.agg({column_name: operation})
-    # column_name = 'Salary'
-    # operation = 'stddev'
-    
-    df_transformed = get_agg_result(df, column_name)
+    file_data_count = get_files_details()
+    tbl_data_count = row_count_val(spark, df, field_name, table_name)
+    records_diff = tbl_data_count - file_data_count
+    if records_diff == 0:
+        print('Table and files have same number of records')
+    elif records_diff > 0:
+        print('Table have more records than the files')
+    else:
+        print('Files have more data than table')
+    df_transformed = df
     return df_transformed
 
 def load_data(df):
-    for data in df:
-        data.show()
+    df.show()
 
 # Entry point for PySpark ETL application
 if __name__ == '__main__':
