@@ -1,8 +1,9 @@
 from dependencies.spark import start_spark
-from utils.aggregate_ops import get_agg_result
-from utils.row_count_validation import row_count_val
+from utils.aggregate_operations import get_agg_result
 from pyspark.sql.types import DoubleType, IntegerType
-from utils.file_ops import get_files_details
+from utils.row_count_validation import get_row_count_diff
+from utils.data_quality import check_data_quality
+from utils.get_report import generate_report
 def main():
     """Main ETL script definition.
     :return: None
@@ -18,8 +19,11 @@ def main():
     # Execute ETL pipeline
     data = extract_data(spark, config['db_name'], config['table_name'])
     data_transformed = transformed_data(data, spark, config['column_with_agg_func'], 
-                        config['table_name'], config['field_name'])
-    load_data(data_transformed)
+                        config['table_name'], config['field_name'],
+                        config['column_to_retrieve_after_null_check'],
+                        config['columns_to_check_for_null'],
+                        config['check_type'])
+    load_data(data_transformed, config['table_name'])
 
     # log the success and terminate the spark session
     log.warn('test_etl_job is finished')
@@ -28,32 +32,32 @@ def main():
 
 def extract_data(spark, db_name, table_name):
     """Load data from Hive table"""
-    # spark.sql("show databases").show()
     spark.sql("use {0}".format(db_name)) # This is a hive db
     df = spark.sql(
         "select * from {0}".format(table_name)
     )
-    # df.show()
     return df
 
-def transformed_data(df, spark, column_with_agg_func, table_name, field_name):
+def transformed_data(df, spark, column_with_agg_func, table_name, field_name, 
+                    column_to_retrieve_after_null_check, columns_to_check_for_null, check_type):
     "Transform the original data set"
-    # df.coalesce(1).write.csv("D:/Users/URaut/Pictures/output1.csv")
-    # df_transformed = df.select("Firstname")
-    file_data_count = get_files_details()
-    tbl_data_count = row_count_val(spark, df, field_name, table_name)
-    records_diff = tbl_data_count - file_data_count
-    if records_diff == 0:
-        print('Table and files have same number of records')
-    elif records_diff > 0:
-        print('Table have more records than the files')
-    else:
-        print('Files have more data than table')
-    df_transformed = df
+    row_count_diff, result, hive_tbl_row_count, input_file_row_count = get_row_count_diff(spark, df, field_name, table_name)
+    agg_output = get_agg_result(df, column_with_agg_func)
+    list_of_col_values_after_null_check = check_data_quality(spark, df, table_name, column_to_retrieve_after_null_check, columns_to_check_for_null, check_type)
+    # length_of_null_values = len(list_of_col_values_after_null_check)
+    # # print(list_of_col_values_after_null_check.head()[length_of_null_values])
+    # print(length_of_null_values)
+    for x in list_of_col_values_after_null_check:
+        x.show()
+    #     print(x.count())
+    #     # print(x.get[0])
+    #     print(x.head())
+    df_transformed = [row_count_diff, result, hive_tbl_row_count, input_file_row_count, agg_output]
     return df_transformed
 
-def load_data(df):
-    df.show()
+def load_data(df_transformed, table_name):
+    print('Hello')
+    # generate_report(df_transformed, table_name)
 
 # Entry point for PySpark ETL application
 if __name__ == '__main__':
