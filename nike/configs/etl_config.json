@@ -1,6 +1,9 @@
 {
     "db_name": "userdb",
     "table_name":"person",
-    "column_with_agg_func": [["salary", "max"], ["expenses", "stddev"]],
-    "field_name":"salary"
+    "column_with_agg_func": [["salary", "max", "min"], ["expenses", "stddev"]],
+    "field_name":"salary",
+    "column_to_retrieve_after_null_check": "firstname",
+    "columns_to_check_for_null": ["lastname", "salary"],
+    "check_type": "not null"
 }
