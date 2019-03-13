@@ -9,6 +9,8 @@ def generate_report(data, table_name):
     hive_tbl_row_count = data[2]
     input_file_row_count = data[3]
     aggregate_result = data[4] 
+    null_check_data = data[5]
+
     with open("D:/Users/URaut/Desktop/Agg_Results.csv", "w") as csvfile:
         fieldnames = ['Table', 'Column', 'Agg_Func', 'Agg_Val']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=',')
@@ -26,6 +28,18 @@ def generate_report(data, table_name):
         writer.writerow({'Number of records from POS': input_file_row_count, 
                         'Number of transactions loaded into stage': hive_tbl_row_count,
                         'Difference': difference, 'Comments': comments})
+
+    with open("D:/Users/URaut/Desktop/Null_check_Results.csv", "w") as csvfile:
+        fieldnames = ['Table', 'Col Checked For Null', 'Column', 'Column_Values']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=',')
+        writer.writeheader()   
+        for result in null_check_data:
+            for col_name, col_values in result.items():
+                writer.writerow({'Table': table_name,  'Col Checked For Null': col_values[0], 'Column': col_name})
+                for val in range(1, len(col_values)):
+                    # print("{0} columns's value is {1}".format(col_name, val))
+                    writer.writerow({'Column_Values': col_values[val]})
+
 
     
     
