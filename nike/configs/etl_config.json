@@ -1,9 +1,12 @@
 {
     "db_name": "userdb",
-    "table_name":"person",
-    "column_with_agg_func": [["salary", "max", "min"], ["expenses", "stddev"]],
-    "field_name":"salary",
-    "column_to_retrieve_after_null_check": "firstname",
-    "columns_to_check_for_null": ["lastname", "salary"],
-    "check_type": "not null"
+    "table_name":"demo_tran",
+    "file_path": "D:/Users/URaut/Desktop/utilities/pos_files",
+    "field_name":"notifications.POSLog.Transaction.TransactionID",
+    "column_with_agg_func": [["notifications.POSLog.Transaction.SequenceNumber", "max", "min", "stddev", "count"]],
+    "fields_to_compare": ["notifications.POSLog.Transaction.TransactionID", "notifications.POSLog.Transaction.SequenceNumber", "notifications.POSLog.Transaction.SourceMessageId"],
+    "path_to_report_directory": "D:/Users/URaut/Desktop/utilities/reports",
+    "column_to_retrieve_after_null_check": "notifications.POSLog.Transaction.TransactionID",
+    "columns_to_check_for_null": ["notifications.POSLog.Transaction.SequenceNumber"],
+    "check_type": "is null"
 }
