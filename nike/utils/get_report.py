@@ -1,5 +1,4 @@
 import csv
-import xlwt
 
 def generate_report(data, table_name):
     print("Difference between the number of rows in Hive table and the number of file records = {0}".format(data[0]))
